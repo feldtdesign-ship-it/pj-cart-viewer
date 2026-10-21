@@ -1,6 +1,19 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>PJ's Cart</title>
+<meta name="description" content="PJ's cart as a 3D model for phone and tablet. Spin it with a finger. Every part is numbered and explained.">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="PJ O'Rourke II">
+<meta property="og:title" content="PJ's Cart · spin it, tap a number">
+<meta property="og:description" content="A 3D model of PJ's cart for phone and tablet. Every part is numbered and explained.">
+<meta property="og:url" content="https://feldtdesign-ship-it.github.io/pj-cart-viewer/">
+<meta property="og:image" content="https://feldtdesign-ship-it.github.io/pj-cart-viewer/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="PJ's Cart · spin it, tap a number">
+<meta name="twitter:description" content="A 3D model of PJ's cart for phone and tablet. Every part is numbered and explained.">
+<meta name="twitter:image" content="https://feldtdesign-ship-it.github.io/pj-cart-viewer/og.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Sedgwick+Ave+Display&family=Noto+Sans:wght@400;600;700&display=swap" rel="stylesheet">
@@ -27,7 +40,7 @@ model-viewer::part(default-ar-button){display:none}
 .brand{position:absolute;left:max(12px,env(safe-area-inset-left,0px));top:calc(10px + env(safe-area-inset-top,0px));z-index:3;display:flex;align-items:center;gap:10px;pointer-events:none}
 .brand img{height:30px;width:auto;background:var(--ink);padding:4px 9px;border-radius:7px}
 .brand span{font:400 26px/1 var(--hand);text-shadow:-1px -1px 0 #fff,1px -1px 0 #fff,-1px 1px 0 #fff,1px 1px 0 #fff}
-.tools{position:absolute;right:max(10px,env(safe-area-inset-right,0px));top:calc(10px + env(safe-area-inset-top,0px));z-index:3;display:flex;flex-direction:column;gap:8px}
+.tools{position:absolute;right:max(10px,env(safe-area-inset-right,0px));top:calc(10px + env(safe-area-inset-top,0px));z-index:4;display:flex;flex-direction:row;gap:6px}
 .tbtn{min-width:48px;min-height:44px;padding:0 10px;background:var(--paper);border:2px solid var(--ink);border-radius:10px;cursor:pointer;touch-action:manipulation;
   font:700 11px/1 var(--sans);letter-spacing:.06em;text-transform:uppercase}
 .tbtn[aria-pressed="true"]{background:var(--yellow)}
@@ -40,12 +53,19 @@ model-viewer::part(default-ar-button){display:none}
 .ld-bar i{display:block;height:100%;width:0;background:var(--yellow);border-right:2px solid var(--ink);transition:width .25s}
 .ld-pct{font:700 14px/1.3 var(--sans);font-variant-numeric:tabular-nums;letter-spacing:.04em}
 
-/* number pins: only a small numeral touches the cart */
-.pin{display:block;position:relative;width:0;height:0;padding:0;margin:0;border:0;background:none;opacity:0;pointer-events:none;transition:opacity .2s}
-.pin[data-visible]{opacity:1;pointer-events:auto}
-.pin b{position:absolute;left:-14px;top:-14px;width:28px;height:28px;border-radius:50%;background:var(--yellow);border:2px solid var(--ink);display:grid;place-items:center;font:700 13px/1 var(--sans);color:var(--ink);cursor:pointer}
-.pin.on b{width:38px;height:38px;left:-19px;top:-19px;font-size:16px;background:var(--ink);color:var(--yellow);border-color:var(--yellow);box-shadow:0 0 0 3px var(--ink)}
-.stage.no-pins .pin{opacity:0!important;pointer-events:none!important}
+/* callouts: the numbers sit in the margins with a thin line to the part, like an instruction sheet. The hotspot itself is invisible. */
+.pin{display:block;position:relative;width:0;height:0;padding:0;margin:0;border:0;background:none;pointer-events:none}
+.callouts{position:absolute;inset:0;width:100%;height:100%;z-index:3;pointer-events:none;overflow:visible}
+.callouts .ln{stroke:var(--ink);stroke-width:1.5}
+.callouts .dot{fill:var(--yellow);stroke:var(--ink);stroke-width:2}
+.callouts .bd{pointer-events:auto;cursor:pointer}
+.callouts .bd circle{fill:var(--yellow);stroke:var(--ink);stroke-width:2}
+.callouts .bd text{font:700 13px var(--sans);fill:var(--ink)}
+.callouts .on .bd circle{fill:var(--ink);stroke:var(--yellow);stroke-width:2.5}
+.callouts .on .bd text{fill:var(--yellow)}
+.callouts .on .ln{stroke-width:2.5}
+.stage.no-pins .callouts{display:none}
+@media (max-width:430px){.brand span{display:none}}
 
 /* ---------- the one-part card ---------- */
 .sheet{flex:0 0 auto;border-top:2px solid var(--rule);background:var(--paper);padding:12px max(14px,env(safe-area-inset-right,0px)) calc(12px + env(safe-area-inset-bottom,0px)) max(14px,env(safe-area-inset-left,0px))}
@@ -88,6 +108,7 @@ model-viewer::part(default-ar-button){display:none}
       camera-orbit="38deg 78deg auto" min-camera-orbit="auto 4deg 0.6m" max-camera-orbit="auto 106deg 7m"
       field-of-view="30deg" interpolation-decay="70" exposure="1.0" shadow-intensity="1.1" shadow-softness="0.9"
       environment-image="neutral"></model-viewer>
+    <svg class="callouts" id="callouts" role="group" aria-label="Numbered parts"></svg>
     <div class="brand"><img src="signature.png" alt="PJ O'Rourke"><span>The Cart</span></div>
     <div class="tools">
       <button class="tbtn" id="bPins" aria-pressed="true">Nums</button>
@@ -148,11 +169,20 @@ const ITEMS=[
  ['wheels','The frame','Big wheels','Two 8-inch wheels at the handle end. Tip the cart back and it rolls on these.',[-8.5,-10.8,4.0],[0,-1,0],0.75],
  ['casters','The frame','Swivel casters','Two 3.5-inch swivel casters at the front end do the steering.',[8.5,-8.7,1.7],[0,-1,0],0.65],
  ['cubbies','Inside','Folded tees','Three open shelves for folded tees. The shelf just under the power bank is left empty.',[-7.0,0,57.0],[-1,0,0],0.95],
- ['hook','Inside','Coat hook','A black single hook near the top inside, for a cap or a tote.',[-4.5,6.0,66.6],[-1,0,0],0.6],
- ['leds','Inside','Yellow LED strips','Yellow LEDs under each shelf and up both edges of the opening light the inside.',[-7.0,6.0,43.5],[-1,0,0],0.9],
- ['power','Inside','Power bank','A 20,000 mAh power bank sits on a small shelf with a strap. Its built-in cord feeds the iPad.',[0.0,-5.6,37.1],[-1,0,0],0.75],
- ['pit','Inside','Open storage pit','An open pit at the bottom for anything bulky. Its back wall is level with the top of the basket.',[-4.0,0,18.0],[-1,0,0],0.95]
+ ['hook','Inside','Coat hook','A black single hook near the top inside, for a cap or a tote.',[-4.5,6.0,66.6],[-1,-0.6,0],0.55,[-48,84]],
+ ['leds','Inside','Yellow LED strips','Yellow LEDs under each shelf and up both edges of the opening light the inside.',[-7.0,0,54.0],[-1,0,0],0.9,[-24,78]],
+ ['power','Inside','Power bank','A 20,000 mAh power bank sits on a small shelf with a strap. Its built-in cord feeds the iPad.',[0.0,-5.6,37.1],[-1,0.6,0],0.75,[-112,95]],
+ ['pit','Inside','Open storage pit','An open pit at the bottom for anything bulky. Its back wall is level with the top of the basket.',[-4.0,0,16.0],[-1,0,1],0.95,[-125,28]]
 ];
+/* how big each part looks from its close-up angle (inches across, up): the camera distance is worked out from this and the screen shape, so every part fills about 60% of the view and sits centered */
+const SIZE={lamp:[6,8],logo:[12,5],gallery:[14,26],ipad:[11,13],cord:[4,4],tags:[14,12],patches:[14,12],black:[20,14],yellow:[18,4],backlogo:[13,8],
+  basket:[18,10],cabinet:[18,50],handle:[16,12],wheels:[10,10],casters:[6,6],cubbies:[14,22],hook:[4,4],leds:[14,10],power:[6,8],pit:[16,14]};
+function flyRadius(id,fallback){
+  const s=SIZE[id]; if(!s) return fallback;
+  const asp=Math.max(0.3,stage.clientWidth/Math.max(1,stage.clientHeight)), tan=Math.tan(15*Math.PI/180);   // field of view is 30 degrees, vertical
+  const inches=Math.max(s[1]/0.6, s[0]/(0.6*asp));
+  return Math.max(0.6, inches*IN/(2*tan));
+}
 const glt=(p)=>[p[0]*IN,p[2]*IN,-p[1]*IN];            // cart inches (x,y,z up) -> glTF metres (x, y up, -z)
 const pins={}, rows={};
 document.getElementById('cCount').textContent=ITEMS.length;
@@ -175,7 +205,6 @@ ITEMS.forEach((it,i)=>{
   b.dataset.visibilityAttribute='visible'; b.setAttribute('aria-label','Part '+(i+1)+': '+it[2]);
   b.dataset.position=glt(it[4]).map(v=>v.toFixed(4)+'m').join(' ');
   const nm=it[5]; b.dataset.normal=nm[0]+' '+nm[2]+' '+(-nm[1]);
-  b.innerHTML='<b>'+(i+1)+'</b>'; b.addEventListener('click',()=>select(it[0],true));
   V.appendChild(b); pins[it[0]]=b;
 });
 
@@ -188,12 +217,12 @@ function select(id,fly){
   Object.values(pins).forEach(p=>p.classList.remove('on')); pins[id].classList.add('on');
   Object.values(rows).forEach(r=>r.removeAttribute('aria-current')); rows[id].setAttribute('aria-current','true');
   if(fly){
-    const n=it[5], theta=Math.atan2(n[0],-n[1])*180/Math.PI;
-    const phi=Math.max(58,Math.min(98,90-Math.atan2(n[2],Math.hypot(n[0],n[1]))*180/Math.PI*0.6));
+    const n=it[5]; let theta=Math.atan2(n[0],-n[1])*180/Math.PI;
+    let phi=Math.max(58,Math.min(98,90-Math.atan2(n[2],Math.hypot(n[0],n[1]))*180/Math.PI*0.6));
+    if(it[7]){theta=it[7][0];phi=it[7][1]}                            // a few inside parts need a set angle through the open end
     V.autoRotate=false; setPressed('bSpin',false);
     V.cameraTarget=glt(it[4]).map(v=>v.toFixed(4)+'m').join(' ');
-    const k=stage.clientWidth<stage.clientHeight*0.9?1.9:1;          // tall, narrow stage (phone): stand further back
-    V.cameraOrbit=theta.toFixed(1)+'deg '+phi.toFixed(1)+'deg '+(it[6]*k).toFixed(2)+'m';
+    V.cameraOrbit=theta.toFixed(1)+'deg '+phi.toFixed(1)+'deg '+flyRadius(id,it[6]*1.5).toFixed(2)+'m';
   }
 }
 function reset(){
@@ -202,6 +231,38 @@ function reset(){
   Object.values(pins).forEach(p=>p.classList.remove('on')); Object.values(rows).forEach(r=>r.removeAttribute('aria-current'));
   V.cameraTarget=HOME.target; V.cameraOrbit=HOME.orbit; V.fieldOfView=HOME.fov;
 }
+
+/* callouts: a dot on the part, a thin line, and the number out in the left or right margin. Redrawn every frame so it follows the spin. */
+const NS='http://www.w3.org/2000/svg', svg=document.getElementById('callouts'), G={};
+ITEMS.forEach((it,i)=>{
+  const g=document.createElementNS(NS,'g'); g.style.display='none';
+  g.innerHTML='<line class="ln"/><circle class="dot" r="4.5"/><g class="bd"><circle r="14"/><text dy="0.35em" text-anchor="middle">'+(i+1)+'</text></g>';
+  g.querySelector('.bd').addEventListener('click',()=>select(it[0],true));
+  svg.appendChild(g); G[it[0]]={g,ln:g.querySelector('.ln'),dot:g.querySelector('.dot'),bd:g.querySelector('.bd')};
+});
+function drawCallouts(){
+  const w=stage.clientWidth,h=stage.clientHeight; if(!w||!h||stage.classList.contains('no-pins')) return;
+  const vis=[];
+  ITEMS.forEach(it=>{
+    G[it[0]].g.style.display='none';
+    const q=V.queryHotspot&&V.queryHotspot('hotspot-'+it[0]);
+    const isSel=cur>=0&&ITEMS[cur][0]===it[0];
+    if(cur>=0&&!isSel) return;                                          // zoomed in on one part: show only its callout
+    if((isSel||pins[it[0]].hasAttribute('data-visible'))&&q&&q.canvasPosition) vis.push({id:it[0],x:q.canvasPosition.x,y:q.canvasPosition.y});
+  });
+  [true,false].forEach(left=>{
+    const arr=vis.filter(p=>(p.x<w/2)===left).sort((a,b)=>a.y-b.y);
+    let last=-1e9; arr.forEach(p=>{p.by=Math.max(p.y,last+34,66); last=p.by});
+    let top=h-18; for(let i=arr.length-1;i>=0;i--){ if(arr[i].by>top) arr[i].by=top; top=arr[i].by-34; }
+    arr.forEach(p=>{
+      const o=G[p.id], bx=left?22:w-22; o.g.style.display='';
+      o.ln.setAttribute('x1',p.x); o.ln.setAttribute('y1',p.y); o.ln.setAttribute('x2',bx); o.ln.setAttribute('y2',p.by);
+      o.dot.setAttribute('cx',p.x); o.dot.setAttribute('cy',p.y); o.bd.setAttribute('transform','translate('+bx+','+p.by+')');
+      o.g.classList.toggle('on',cur>=0&&ITEMS[cur][0]===p.id);
+    });
+  });
+}
+(function tick(){drawCallouts();requestAnimationFrame(tick)})();
 
 /* buttons */
 function setPressed(id,on){document.getElementById(id).setAttribute('aria-pressed',on)}
