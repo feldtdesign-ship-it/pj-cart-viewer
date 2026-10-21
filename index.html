@@ -106,7 +106,7 @@ body{background:#d9d9d4}
 
 <div class="wrap">
   <section class="stage" id="stage" aria-label="3D model of the cart">
-    <model-viewer id="v" src="cart.glb" alt="PJ's cart. Drag to turn it, pinch to zoom."
+    <model-viewer id="v" src="cart.glb" poster="poster.jpg" reveal="auto" loading="eager" alt="PJ's cart. Drag to turn it, pinch to zoom."
       camera-controls touch-action="none" interaction-prompt="none"
       auto-rotate auto-rotate-delay="3500" rotation-per-second="12deg"
       camera-orbit="38deg 76deg auto" min-camera-orbit="auto 4deg 0.6m" max-camera-orbit="auto 106deg 7m"
@@ -246,6 +246,15 @@ V.addEventListener('progress',e=>{
   document.getElementById('ldPct').textContent=pct<100?pct+'%':'Setting it up…';
   if(pct>=100) document.getElementById('ldTitle').textContent='Almost there…';
 });
+/* if the model can't start on this device, say so on screen instead of waiting forever */
+function loadProblem(msg){
+  const t=document.getElementById('ldTitle'); t.textContent='The 3D model did not start';
+  document.getElementById('ldPct').textContent=msg; document.getElementById('ldPct').style.whiteSpace='normal';
+  document.getElementById('ldPct').style.textAlign='center'; document.getElementById('ldPct').style.maxWidth='88%';
+  const ld=document.getElementById('loading'); ld.classList.remove('done'); ld.style.pointerEvents='none';
+}
+V.addEventListener('error',e=>{const d=e.detail||{}; loadProblem('Error: '+(d.sourceError&&d.sourceError.message||d.message||d.type||'unknown')+'. The parts list below still works.')});
+setTimeout(()=>{if(!V.loaded) loadProblem('Still loading after 45 seconds. Check your connection, then reload. The parts list below still works.')},45000);
 /* the "in your room" button only shows where AR works */
 document.getElementById('bAR').onclick=()=>V.activateAR();
 V.addEventListener('load',()=>{
