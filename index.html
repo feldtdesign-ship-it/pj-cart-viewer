@@ -87,13 +87,12 @@ model-viewer::part(default-ar-button){display:none}
       auto-rotate auto-rotate-delay="3500" rotation-per-second="12deg"
       camera-orbit="38deg 78deg auto" min-camera-orbit="auto 4deg 0.6m" max-camera-orbit="auto 106deg 7m"
       field-of-view="30deg" interpolation-decay="70" exposure="1.0" shadow-intensity="1.1" shadow-softness="0.9"
-      environment-image="neutral" ar ar-modes="webxr scene-viewer quick-look" ar-placement="floor"></model-viewer>
+      environment-image="neutral"></model-viewer>
     <div class="brand"><img src="signature.png" alt="PJ O'Rourke"><span>The Cart</span></div>
     <div class="tools">
       <button class="tbtn" id="bPins" aria-pressed="true">Nums</button>
       <button class="tbtn" id="bSpin" aria-pressed="true">Spin</button>
       <button class="tbtn" id="bReset">Reset</button>
-      <button class="tbtn" id="bAR" hidden>AR</button>
     </div>
     <div class="loading" id="loading" role="status" aria-live="polite">
       <div class="ld-title" id="ldTitle">Loading the cart…</div>
@@ -211,7 +210,6 @@ document.getElementById('next').onclick=()=>select(ITEMS[(cur+1)%ITEMS.length][0
 document.getElementById('bPins').onclick=e=>{const on=e.currentTarget.getAttribute('aria-pressed')!=='true';setPressed('bPins',on);stage.classList.toggle('no-pins',!on)};
 document.getElementById('bSpin').onclick=e=>{const on=e.currentTarget.getAttribute('aria-pressed')!=='true';setPressed('bSpin',on);V.autoRotate=on;if(on&&cur>=0)reset()};
 document.getElementById('bReset').onclick=()=>{reset();V.autoRotate=true;setPressed('bSpin',true)};
-document.getElementById('bAR').onclick=()=>V.activateAR();
 const all=document.getElementById('all');
 function openAll(){all.classList.add('open')} function closeAll(){all.classList.remove('open')}
 document.getElementById('bAll').onclick=openAll; document.getElementById('closeAll').onclick=closeAll;
@@ -234,7 +232,6 @@ setTimeout(()=>{if(!V.loaded) loadProblem('Still loading after 45 seconds. Check
 
 V.addEventListener('load',()=>{
   document.getElementById('loading').classList.add('done');
-  document.getElementById('bAR').hidden=!V.canActivateAR;
   /* iPad plays the New York Fuckery loop; the lamp flashes like a real barricade light */
   const mats=V.model.materials, byName=n=>mats.find(x=>x.name===n);
   const screen=byName('iPadScreen');
