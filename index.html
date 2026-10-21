@@ -1,0 +1,269 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>PJ's Cart</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sedgwick+Ave+Display&family=Noto+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+<script type="module" src="https://unpkg.com/@google/model-viewer@3.5.0/dist/model-viewer.min.js"></script>
+<style>
+/* Layout: an instruction-manual page. A pale stage with the 3D cart on the left (sticky), the numbered parts list on the right.
+   On a phone the stage sticks to the top and the list scrolls under it. Nothing is written over the cart except small numbers. */
+:root{
+  --paper:#ffffff;
+  --stage:#e6e6e2;
+  --ink:#15151b;
+  --ink-soft:#50505c;
+  --rule:#15151b;
+  --yellow:#ffd400;
+  --yellow-wash:#fff4b8;
+  --hand:'Sedgwick Ave Display','Marker Felt',cursive;
+  --sans:'Noto Sans',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --stage-h:52dvh;
+}
+html,body{height:auto}
+body{margin:0;background:var(--paper);color:var(--ink);font:400 16px/1.5 var(--sans);
+  padding-left:0;padding-right:0}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+button{font:inherit;color:inherit}
+
+.wrap{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);min-height:100dvh}
+
+/* ---------- stage ---------- */
+.stage{position:sticky;top:0;height:100dvh;background:var(--stage);border-right:2px solid var(--rule);overflow:hidden;min-width:0}
+model-viewer{position:absolute;inset:0;width:100%;height:100%;--poster-color:transparent;--progress-bar-color:transparent;
+  background:radial-gradient(ellipse at 50% 70%,#f4f4f1 0%,#e6e6e2 55%,#d6d6d1 100%);outline:none}
+model-viewer::part(default-ar-button){display:none}
+.loading{position:absolute;inset:0;z-index:2;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;color:var(--ink);pointer-events:none;transition:opacity .5s;background:rgba(230,230,226,.72)}
+.loading.done{opacity:0;visibility:hidden;transition:opacity .5s,visibility 0s .5s}
+.ld-title{font:400 clamp(26px,4vw,40px)/1 var(--hand)}
+.ld-bar{width:min(280px,64%);height:16px;border:2px solid var(--ink);border-radius:9px;background:var(--paper);overflow:hidden}
+.ld-bar i{display:block;height:100%;width:0;background:var(--yellow);border-right:2px solid var(--ink);transition:width .25s}
+.ld-pct{font:700 14px/1 var(--sans);font-variant-numeric:tabular-nums;letter-spacing:.06em}
+
+/* number pins: only a small numeral touches the model */
+.pin{display:block;position:relative;width:0;height:0;padding:0;margin:0;border:0;background:none;opacity:0;pointer-events:none;transition:opacity .2s}
+.pin[data-visible]{opacity:1;pointer-events:auto}
+.pin b{position:absolute;left:-13px;top:-13px;width:26px;height:26px;border-radius:50%;background:var(--yellow);border:2px solid var(--ink);
+  display:grid;place-items:center;font:700 12px/1 var(--sans);color:var(--ink);box-shadow:0 1px 0 rgba(0,0,0,.25);cursor:pointer}
+.pin.on b{width:34px;height:34px;left:-17px;top:-17px;font-size:15px;background:var(--ink);color:var(--yellow);border-color:var(--yellow);box-shadow:0 0 0 3px var(--ink)}
+.stage.no-pins .pin{opacity:0!important;pointer-events:none!important}
+
+/* stage controls */
+.ctl{position:absolute;left:0;right:0;bottom:0;display:flex;flex-wrap:wrap;justify-content:center;gap:8px;padding:10px max(12px,env(safe-area-inset-left,0px)) calc(12px + env(safe-area-inset-bottom,0px)) max(12px,env(safe-area-inset-right,0px));z-index:3}
+.btn{min-height:46px;min-width:56px;padding:0 16px;background:var(--paper);border:2px solid var(--ink);border-radius:10px;cursor:pointer;touch-action:manipulation;
+  font:700 13px/1 var(--sans);letter-spacing:.06em;text-transform:uppercase;display:inline-flex;align-items:center;justify-content:center;gap:8px}
+.btn:hover{background:var(--yellow-wash)}
+.btn:active{background:var(--yellow)}
+.btn[aria-pressed="true"]{background:var(--yellow)}
+.btn:focus-visible,.part:focus-visible{outline:3px solid var(--ink);outline-offset:2px}
+.step{display:inline-flex;align-items:center;gap:0;border:2px solid var(--ink);border-radius:10px;background:var(--paper);overflow:hidden}
+.step .btn{border:0;border-radius:0;min-width:48px;font-size:18px}
+.step output{min-width:62px;text-align:center;font:700 14px/1 var(--sans);font-variant-numeric:tabular-nums}
+
+/* ---------- parts column ---------- */
+.parts{min-width:0;padding-block:clamp(20px,3vw,36px) 48px;padding-left:max(clamp(16px,3vw,36px),env(safe-area-inset-left,0px));padding-right:max(clamp(16px,3vw,36px),env(safe-area-inset-right,0px))}
+.head{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.head img{height:clamp(40px,6vw,60px);width:auto;max-width:100%;background:var(--ink);padding:6px 12px;border-radius:8px}
+h1{margin:0;font:400 clamp(34px,6vw,56px)/.95 var(--hand);letter-spacing:.01em}
+.lede{margin:.6em 0 0;max-width:46ch;color:var(--ink-soft)}
+.glance{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:0;margin:22px 0 6px;border:2px solid var(--rule)}
+.glance div{padding:10px 12px;border-right:2px solid var(--rule);border-bottom:2px solid var(--rule);margin:-1px -1px 0 0}
+.glance dt{font:600 11px/1.2 var(--sans);letter-spacing:.08em;text-transform:uppercase;color:var(--ink-soft)}
+.glance dd{margin:4px 0 0;font:700 17px/1.2 var(--sans);font-variant-numeric:tabular-nums}
+
+h2{margin:30px 0 0;padding-bottom:8px;border-bottom:2px solid var(--rule);font:700 12px/1 var(--sans);letter-spacing:.14em;text-transform:uppercase;display:flex;justify-content:space-between;gap:12px}
+h2 span{color:var(--ink-soft);font-weight:600;letter-spacing:.06em}
+ol{list-style:none;margin:0;padding:0}
+.part{display:grid;grid-template-columns:42px minmax(0,1fr);gap:14px;width:100%;text-align:left;padding:14px 10px 14px 6px;background:none;border:0;border-bottom:1px solid #c9c9c3;cursor:pointer;scroll-margin-top:calc(var(--sticky,0px) + 12px)}
+.part:hover{background:#faf8ee}
+.num{width:36px;height:36px;border-radius:50%;background:var(--yellow);border:2px solid var(--ink);display:grid;place-items:center;font:700 15px/1 var(--sans);font-variant-numeric:tabular-nums}
+.name{margin:0;font:400 clamp(24px,3.2vw,30px)/1.05 var(--hand)}
+.part p{margin:4px 0 0;color:var(--ink-soft);font-size:15px;max-width:52ch}
+.part[aria-current="true"]{background:var(--yellow-wash);box-shadow:inset 0 0 0 2px var(--ink)}
+.part[aria-current="true"] .num{background:var(--ink);color:var(--yellow);border-color:var(--ink)}
+.foot{margin-top:28px;color:var(--ink-soft);font-size:13px;max-width:56ch}
+
+/* ---------- phone and narrow tablet: stage sticks to the top ---------- */
+@media (max-width:900px){
+  .wrap{display:block}
+  .stage{height:var(--stage-h);border-right:0;border-bottom:2px solid var(--rule);z-index:5}
+  .ctl{padding-top:6px;gap:6px}
+  .btn{min-height:40px;min-width:44px;padding:0 10px;font-size:11px;letter-spacing:.04em}
+  .step .btn{min-width:40px;font-size:17px}
+  .step output{min-width:50px;font-size:13px}
+  .parts{--sticky:var(--stage-h);padding-top:18px}
+  .pin b{width:24px;height:24px;left:-12px;top:-12px}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}
+/* mobile first: one phone-width column on every screen. The cart sticks to the top, the parts list scrolls under it. */
+:root{--stage-h:min(56dvh,560px)}
+body{background:#d9d9d4}
+.wrap{display:block;max-width:560px;margin:0 auto;min-height:100dvh;background:var(--paper);box-shadow:0 0 0 2px var(--rule)}
+.stage{height:var(--stage-h);border-right:0;border-bottom:2px solid var(--rule);z-index:5}
+.parts{--sticky:var(--stage-h)}
+</style>
+
+<div class="wrap">
+  <section class="stage" id="stage" aria-label="3D model of the cart">
+    <model-viewer id="v" src="cart.glb" alt="PJ's cart. Drag to turn it, pinch to zoom."
+      camera-controls touch-action="none" interaction-prompt="none"
+      auto-rotate auto-rotate-delay="3500" rotation-per-second="12deg"
+      camera-orbit="38deg 76deg auto" min-camera-orbit="auto 4deg 0.6m" max-camera-orbit="auto 106deg 7m"
+      field-of-view="30deg" interpolation-decay="70" exposure="1.0" shadow-intensity="1.1" shadow-softness="0.9"
+      environment-image="neutral" ar ar-modes="webxr scene-viewer quick-look" ar-placement="floor">
+    </model-viewer>
+    <div class="loading" id="loading" role="status" aria-live="polite">
+      <div class="ld-title" id="ldTitle">Loading the cart…</div>
+      <div class="ld-bar" aria-hidden="true"><i id="ldFill"></i></div>
+      <div class="ld-pct" id="ldPct">0%</div>
+    </div>
+    <div class="ctl">
+      <div class="step" role="group" aria-label="Step through the parts">
+        <button class="btn" id="prev" aria-label="Previous part">‹</button>
+        <output id="stepOut">1 / 20</output>
+        <button class="btn" id="next" aria-label="Next part">›</button>
+      </div>
+      <button class="btn" id="bPins" aria-pressed="true">Numbers</button>
+      <button class="btn" id="bSpin" aria-pressed="true">Spin</button>
+      <button class="btn" id="bReset">Reset</button>
+      <button class="btn" id="bAR" hidden>In your room</button>
+    </div>
+  </section>
+
+  <main class="parts">
+    <div class="head">
+      <img src="signature.png" alt="PJ O'Rourke">
+      <h1>The Cart</h1>
+    </div>
+    <p class="lede">Everything on it, numbered. Spin the cart with your finger, then tap a number or a part below to fly in on it.</p>
+    <dl class="glance">
+      <div><dt>Height with lamp</dt><dd>6 ft 5 in</dd></div>
+      <div><dt>Cabinet</dt><dd>17 × 14 × 63 in</dd></div>
+      <div><dt>Basket inside</dt><dd>18 × 15 × 16 in</dd></div>
+      <div><dt>You push from</dt><dd>the back</dd></div>
+    </dl>
+    <div id="list"></div>
+    <p class="foot">Sizes are the ones used to build the model. Prices on the tags are the shop's. The iPad plays the New York Fuckery loop.</p>
+  </main>
+</div>
+
+<script>
+const V=document.getElementById('v'), stage=document.getElementById('stage');
+const IN=0.0254;
+/* id, group, name, explanation, position in inches (cart coordinates: +X front, -X handle end, +Y long side, -Y iPad side, Z up), outward normal, how close to fly (m) */
+const GROUPS=['On top','Outside','The frame','Inside'];
+const ITEMS=[
+ ['lamp','On top','Barricade lamp','Battery-style barricade lamp on the very top. The amber lens flashes about once a second, like a roadwork light.',[1.0,0,74.3],[1,0,0.2],0.8],
+ ['logo','On top','3D printed logo','PJ’s signature, printed as a raised shape about a third of an inch thick. It sits at the top of the front, the end away from the handle.',[9.9,0,63.9],[1,0,0],0.85],
+ ['gallery','Outside','Gallery wall','Twelve 5×7 prints in thin black frames, art edge to edge with no mat. Six on the long side, four on the front, two on the iPad side.',[1.0,7.2,54.5],[0,1,0],1.6],
+ ['ipad','Outside','iPad','An iPad Pro 13 slides into a black frame that is open at the top. It plays the vertical New York Fuckery loop all day.',[1.0,-7.4,50.0],[0,-1,0],0.8],
+ ['cord','Outside','Charge cord','A short USB-C cord goes through a grommet in the wall and plugs into the iPad’s charging port.',[1.0,-7.2,43.8],[0,-1,0],0.5],
+ ['tags','Outside','Price tags','Small white tags on every patch and on a few prints. Patches are $20 to $40, prints are $50, the same as on the shop.',[-0.5,8.4,13.7],[0,1,0],0.65],
+ ['patches','Outside','Sew-on patches','Fourteen small sew-on patches, 2.5 to 5 inches wide, in three clusters on the black panels.',[1.1,-8.3,16.3],[0,-1,0],0.85],
+ ['black','Outside','Black paint','Black panels on the front and both sides sit outside the wire, so the cross bars disappear. The diagonal handle tubes stay in front.',[4.0,8.25,20.0],[0,1,0],0.9],
+ ['yellow','Outside','Safety yellow','A 3-inch band of signature safety yellow runs along the bottom of every side.',[10.8,0,8.1],[1,0,0],0.75],
+ ['backlogo','Outside','Yellow logo','A second logo in yellow on the black panel at the handle end.',[-9.0,0,15.8],[-1,0,0],0.75],
+ ['basket','The frame','Wire basket','The cart’s steel wire basket holds the cabinet. It is 18 × 15 × 16 inches inside.',[1.0,-8.4,22.6],[0,-1,0.1],0.85],
+ ['cabinet','The frame','Plywood cabinet','White painted plywood, 17 × 14 × 63 inches, open on one end and raw plywood inside.',[9.7,0,40.0],[1,0,0],1.2],
+ ['handle','The frame','Push handle','You push from the back. The padded grip is 40 inches up, and the diagonal tubes carry it down to the casters.',[-12.9,0,40.0],[-1,0,0],1.0],
+ ['wheels','The frame','Big wheels','Two 8-inch wheels at the handle end. Tip the cart back and it rolls on these.',[-8.5,-10.8,4.0],[0,-1,0],0.75],
+ ['casters','The frame','Swivel casters','Two 3.5-inch swivel casters at the front end do the steering.',[8.5,-8.7,1.7],[0,-1,0],0.65],
+ ['cubbies','Inside','Folded tees','Three open shelves for folded tees. The shelf just under the power bank is left empty.',[-7.0,0,57.0],[-1,0,0],0.95],
+ ['hook','Inside','Coat hook','A black single hook near the top inside, for a cap or a tote.',[-4.5,6.0,66.6],[-1,0,0],0.6],
+ ['leds','Inside','Yellow LED strips','Yellow LEDs under each shelf and up both edges of the opening light the inside.',[-7.0,6.0,43.5],[-1,0,0],0.9],
+ ['power','Inside','Power bank','A 20,000 mAh power bank sits on a small shelf with a strap. Its built-in cord feeds the iPad.',[0.0,-5.6,37.1],[-1,0,0],0.75],
+ ['pit','Inside','Open storage pit','An open pit at the bottom for anything bulky. Its back wall is level with the top of the basket.',[-4.0,0,18.0],[-1,0,0],0.95]
+];
+const glt=(p)=>[p[0]*IN,p[2]*IN,-p[1]*IN];            // cart inches (x,y,z up) -> glTF metres (x, y up, -z)
+const listEl=document.getElementById('list'), pins={}, rows={};
+
+/* parts list */
+GROUPS.forEach(g=>{
+  const items=ITEMS.filter(i=>i[1]===g);
+  const h=document.createElement('h2'); h.innerHTML=g+'<span>'+items.length+' parts</span>'; listEl.appendChild(h);
+  const ol=document.createElement('ol'); listEl.appendChild(ol);
+  items.forEach(it=>{
+    const n=ITEMS.indexOf(it)+1, li=document.createElement('li'), b=document.createElement('button');
+    b.className='part'; b.type='button'; b.id='part-'+it[0];
+    b.innerHTML='<span class="num">'+n+'</span><span><h3 class="name">'+it[2]+'</h3><p>'+it[3]+'</p></span>';
+    b.addEventListener('click',()=>select(it[0],true)); li.appendChild(b); ol.appendChild(li); rows[it[0]]=b;
+  });
+});
+
+/* numbered pins on the model */
+ITEMS.forEach((it,i)=>{
+  const b=document.createElement('button'); b.className='pin'; b.slot='hotspot-'+it[0]; b.type='button';
+  b.dataset.visibilityAttribute='visible'; b.setAttribute('aria-label','Part '+(i+1)+': '+it[2]);
+  b.dataset.position=glt(it[4]).map(v=>v.toFixed(4)+'m').join(' ');
+  const nm=it[5]; b.dataset.normal=nm[0]+' '+nm[2]+' '+(-nm[1]);
+  b.innerHTML='<b>'+(i+1)+'</b>'; b.addEventListener('click',()=>select(it[0],true,true));
+  V.appendChild(b); pins[it[0]]=b;
+});
+
+/* selecting: highlight the row and pin, fly the camera in head-on */
+let cur=-1;
+const HOME={orbit:'38deg 76deg auto',target:'auto auto auto',fov:'30deg'};
+const out=document.getElementById('stepOut');
+function stickyH(){return stage.offsetHeight}
+function select(id,fly,scroll){
+  const idx=ITEMS.findIndex(i=>i[0]===id); if(idx<0) return; cur=idx; const it=ITEMS[idx];
+  Object.values(rows).forEach(r=>r.removeAttribute('aria-current')); rows[id].setAttribute('aria-current','true');
+  Object.values(pins).forEach(p=>p.classList.remove('on')); pins[id].classList.add('on');
+  out.textContent=(idx+1)+' / '+ITEMS.length;
+  document.documentElement.style.setProperty('--sticky',stickyH()+'px');
+  if(fly){
+    const n=it[5], theta=Math.atan2(n[0],-n[1])*180/Math.PI;
+    const phi=Math.max(58,Math.min(98,90-Math.atan2(n[2],Math.hypot(n[0],n[1]))*180/Math.PI*0.6));
+    V.autoRotate=false; setPressed('bSpin',false);
+    V.cameraTarget=glt(it[4]).map(v=>v.toFixed(4)+'m').join(' ');
+    const k=stage.clientWidth<stage.clientHeight*0.9?1.9:1;          // tall, narrow stage (phone): stand further back
+    V.cameraOrbit=theta.toFixed(1)+'deg '+phi.toFixed(1)+'deg '+(it[6]*k).toFixed(2)+'m';
+  }
+  if(scroll||fly) rows[id].scrollIntoView({block:'nearest',behavior:'smooth'});
+}
+function reset(){
+  cur=-1; out.textContent='– / '+ITEMS.length;
+  Object.values(rows).forEach(r=>r.removeAttribute('aria-current')); Object.values(pins).forEach(p=>p.classList.remove('on'));
+  V.cameraTarget=HOME.target; V.cameraOrbit=HOME.orbit; V.fieldOfView=HOME.fov;
+}
+out.textContent='– / '+ITEMS.length;
+
+/* controls */
+function setPressed(id,on){document.getElementById(id).setAttribute('aria-pressed',on)}
+document.getElementById('prev').onclick=()=>select(ITEMS[(cur<=0?ITEMS.length:cur)-1][0],true,true);
+document.getElementById('next').onclick=()=>select(ITEMS[(cur+1)%ITEMS.length][0],true,true);
+document.getElementById('bPins').onclick=e=>{const on=e.currentTarget.getAttribute('aria-pressed')!=='true';setPressed('bPins',on);stage.classList.toggle('no-pins',!on)};
+document.getElementById('bSpin').onclick=e=>{const on=e.currentTarget.getAttribute('aria-pressed')!=='true';setPressed('bSpin',on);V.autoRotate=on;if(on&&cur>=0)reset()};
+document.getElementById('bReset').onclick=()=>{reset();V.autoRotate=true;setPressed('bSpin',true)};
+V.addEventListener('camera-change',e=>{if(e.detail&&e.detail.source==='user-interaction'){setPressed('bSpin',false)}});
+window.addEventListener('resize',()=>document.documentElement.style.setProperty('--sticky',stickyH()+'px'));
+
+/* real loading progress: download percent, then a "setting up" state while the phone prepares the model */
+V.addEventListener('progress',e=>{
+  const p=Math.max(0,Math.min(1,e.detail.totalProgress||0)), pct=Math.round(p*100);
+  document.getElementById('ldFill').style.width=pct+'%';
+  document.getElementById('ldPct').textContent=pct<100?pct+'%':'Setting it up…';
+  if(pct>=100) document.getElementById('ldTitle').textContent='Almost there…';
+});
+/* the "in your room" button only shows where AR works */
+document.getElementById('bAR').onclick=()=>V.activateAR();
+V.addEventListener('load',()=>{
+  document.getElementById('loading').classList.add('done');
+  document.getElementById('bAR').hidden=!V.canActivateAR;
+  document.documentElement.style.setProperty('--sticky',stickyH()+'px');
+  /* iPad plays the New York Fuckery loop; the lamp flashes like a real barricade light */
+  const mats=V.model.materials, byName=n=>mats.find(x=>x.name===n);
+  const screen=byName('iPadScreen');
+  if(screen){
+    try{
+      const vt=V.createVideoTexture('screen.mp4'); const el=(vt.source&&vt.source.element)||null;
+      if(el){el.loop=true;el.muted=true;el.playsInline=true;el.setAttribute('playsinline','');el.play&&el.play().catch(()=>{});
+        const kick=()=>{el.play&&el.play().catch(()=>{});window.removeEventListener('pointerdown',kick)};window.addEventListener('pointerdown',kick)}
+      screen.emissiveTexture.setTexture(vt);
+    }catch(err){console.warn('screen video unavailable',err)}
+  }
+  const lamp=byName('Lamp_Amber');
+  if(lamp){let on=true;setInterval(()=>{on=!on;lamp.setEmissiveFactor(on?[1,0.28,0]:[0.08,0.02,0])},450)}
+});
+</script>
