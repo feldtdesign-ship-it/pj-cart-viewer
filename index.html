@@ -1,156 +1,135 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>PJ's Cart</title>
-<meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Sedgwick+Ave+Display&family=Noto+Sans:wght@400;600;700&display=swap" rel="stylesheet">
 <script type="module" src="https://unpkg.com/@google/model-viewer@3.5.0/dist/model-viewer.min.js"></script>
 <style>
-/* Layout: an instruction-manual page. A pale stage with the 3D cart on the left (sticky), the numbered parts list on the right.
-   On a phone the stage sticks to the top and the list scrolls under it. Nothing is written over the cart except small numbers. */
+/* Phone first. The cart fills the screen. One small card at the bottom shows one part at a time, with arrows.
+   "All parts" opens the whole numbered list. */
 :root{
-  --paper:#ffffff;
-  --stage:#e6e6e2;
-  --ink:#15151b;
-  --ink-soft:#50505c;
-  --rule:#15151b;
-  --yellow:#ffd400;
-  --yellow-wash:#fff4b8;
-  --hand:'Sedgwick Ave Display','Marker Felt',cursive;
-  --sans:'Noto Sans',system-ui,-apple-system,'Segoe UI',sans-serif;
-  --stage-h:52dvh;
+  --paper:#ffffff; --stage:#e6e6e2; --ink:#15151b; --ink-soft:#50505c; --rule:#15151b; --yellow:#ffd400; --yellow-wash:#fff4b8;
+  --hand:'Sedgwick Ave Display','Marker Felt',cursive; --sans:'Noto Sans',system-ui,-apple-system,'Segoe UI',sans-serif;
 }
-html,body{height:auto}
-body{margin:0;background:var(--paper);color:var(--ink);font:400 16px/1.5 var(--sans);
-  padding-left:0;padding-right:0}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;margin:0;overflow:hidden;overscroll-behavior:none}
+body{background:#cfcfca;color:var(--ink);font:400 16px/1.45 var(--sans)}
 button{font:inherit;color:inherit}
 
-.wrap{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);min-height:100dvh}
+.app{position:relative;display:flex;flex-direction:column;height:100dvh;max-width:640px;margin:0 auto;background:var(--paper);box-shadow:0 0 0 2px var(--rule)}
 
-/* ---------- stage ---------- */
-.stage{position:sticky;top:0;height:100dvh;background:var(--stage);border-right:2px solid var(--rule);overflow:hidden;min-width:0}
+/* ---------- the cart ---------- */
+.stage{position:relative;flex:1 1 auto;min-height:0;background:var(--stage);overflow:hidden}
 model-viewer{position:absolute;inset:0;width:100%;height:100%;--poster-color:transparent;--progress-bar-color:transparent;
-  background:radial-gradient(ellipse at 50% 70%,#f4f4f1 0%,#e6e6e2 55%,#d6d6d1 100%);outline:none}
+  background:radial-gradient(ellipse at 50% 72%,#f4f4f1 0%,#e6e6e2 55%,#d3d3ce 100%);outline:none}
 model-viewer::part(default-ar-button){display:none}
-.loading{position:absolute;inset:0;z-index:2;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;color:var(--ink);pointer-events:none;transition:opacity .5s;background:rgba(230,230,226,.72)}
+.brand{position:absolute;left:max(12px,env(safe-area-inset-left,0px));top:calc(10px + env(safe-area-inset-top,0px));z-index:3;display:flex;align-items:center;gap:10px;pointer-events:none}
+.brand img{height:30px;width:auto;background:var(--ink);padding:4px 9px;border-radius:7px}
+.brand span{font:400 26px/1 var(--hand);text-shadow:-1px -1px 0 #fff,1px -1px 0 #fff,-1px 1px 0 #fff,1px 1px 0 #fff}
+.tools{position:absolute;right:max(10px,env(safe-area-inset-right,0px));top:calc(10px + env(safe-area-inset-top,0px));z-index:3;display:flex;flex-direction:column;gap:8px}
+.tbtn{min-width:48px;min-height:44px;padding:0 10px;background:var(--paper);border:2px solid var(--ink);border-radius:10px;cursor:pointer;touch-action:manipulation;
+  font:700 11px/1 var(--sans);letter-spacing:.06em;text-transform:uppercase}
+.tbtn[aria-pressed="true"]{background:var(--yellow)}
+.tbtn:active{background:var(--yellow-wash)}
+
+.loading{position:absolute;inset:0;z-index:2;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;pointer-events:none;transition:opacity .5s;background:rgba(230,230,226,.55)}
 .loading.done{opacity:0;visibility:hidden;transition:opacity .5s,visibility 0s .5s}
-.ld-title{font:400 clamp(26px,4vw,40px)/1 var(--hand)}
+.ld-title{font:400 clamp(26px,7vw,40px)/1 var(--hand)}
 .ld-bar{width:min(280px,64%);height:16px;border:2px solid var(--ink);border-radius:9px;background:var(--paper);overflow:hidden}
 .ld-bar i{display:block;height:100%;width:0;background:var(--yellow);border-right:2px solid var(--ink);transition:width .25s}
-.ld-pct{font:700 14px/1 var(--sans);font-variant-numeric:tabular-nums;letter-spacing:.06em}
+.ld-pct{font:700 14px/1.3 var(--sans);font-variant-numeric:tabular-nums;letter-spacing:.04em}
 
-/* number pins: only a small numeral touches the model */
+/* number pins: only a small numeral touches the cart */
 .pin{display:block;position:relative;width:0;height:0;padding:0;margin:0;border:0;background:none;opacity:0;pointer-events:none;transition:opacity .2s}
 .pin[data-visible]{opacity:1;pointer-events:auto}
-.pin b{position:absolute;left:-13px;top:-13px;width:26px;height:26px;border-radius:50%;background:var(--yellow);border:2px solid var(--ink);
-  display:grid;place-items:center;font:700 12px/1 var(--sans);color:var(--ink);box-shadow:0 1px 0 rgba(0,0,0,.25);cursor:pointer}
-.pin.on b{width:34px;height:34px;left:-17px;top:-17px;font-size:15px;background:var(--ink);color:var(--yellow);border-color:var(--yellow);box-shadow:0 0 0 3px var(--ink)}
+.pin b{position:absolute;left:-14px;top:-14px;width:28px;height:28px;border-radius:50%;background:var(--yellow);border:2px solid var(--ink);display:grid;place-items:center;font:700 13px/1 var(--sans);color:var(--ink);cursor:pointer}
+.pin.on b{width:38px;height:38px;left:-19px;top:-19px;font-size:16px;background:var(--ink);color:var(--yellow);border-color:var(--yellow);box-shadow:0 0 0 3px var(--ink)}
 .stage.no-pins .pin{opacity:0!important;pointer-events:none!important}
 
-/* stage controls */
-.ctl{position:absolute;left:0;right:0;bottom:0;display:flex;flex-wrap:wrap;justify-content:center;gap:8px;padding:10px max(12px,env(safe-area-inset-left,0px)) calc(12px + env(safe-area-inset-bottom,0px)) max(12px,env(safe-area-inset-right,0px));z-index:3}
-.btn{min-height:46px;min-width:56px;padding:0 16px;background:var(--paper);border:2px solid var(--ink);border-radius:10px;cursor:pointer;touch-action:manipulation;
-  font:700 13px/1 var(--sans);letter-spacing:.06em;text-transform:uppercase;display:inline-flex;align-items:center;justify-content:center;gap:8px}
-.btn:hover{background:var(--yellow-wash)}
-.btn:active{background:var(--yellow)}
-.btn[aria-pressed="true"]{background:var(--yellow)}
-.btn:focus-visible,.part:focus-visible{outline:3px solid var(--ink);outline-offset:2px}
-.step{display:inline-flex;align-items:center;gap:0;border:2px solid var(--ink);border-radius:10px;background:var(--paper);overflow:hidden}
-.step .btn{border:0;border-radius:0;min-width:48px;font-size:18px}
-.step output{min-width:62px;text-align:center;font:700 14px/1 var(--sans);font-variant-numeric:tabular-nums}
+/* ---------- the one-part card ---------- */
+.sheet{flex:0 0 auto;border-top:2px solid var(--rule);background:var(--paper);padding:12px max(14px,env(safe-area-inset-right,0px)) calc(12px + env(safe-area-inset-bottom,0px)) max(14px,env(safe-area-inset-left,0px))}
+.card{display:grid;grid-template-columns:44px minmax(0,1fr);gap:12px;align-items:start;min-height:104px}
+.num{width:42px;height:42px;border-radius:50%;background:var(--yellow);border:2px solid var(--ink);display:grid;place-items:center;font:700 17px/1 var(--sans);font-variant-numeric:tabular-nums}
+.card h2{margin:0;font:400 clamp(28px,7.4vw,36px)/1 var(--hand)}
+.card p{margin:6px 0 0;color:var(--ink-soft);font-size:15px;line-height:1.4}
+.nav{display:grid;grid-template-columns:56px 1fr 56px;gap:10px;margin-top:10px}
+.btn{min-height:48px;background:var(--paper);border:2px solid var(--ink);border-radius:10px;cursor:pointer;touch-action:manipulation;font:700 13px/1 var(--sans);letter-spacing:.06em;text-transform:uppercase;font-variant-numeric:tabular-nums}
+.btn.arrow{font-size:22px}
+.btn.main{background:var(--yellow)}
+.btn:active{background:var(--yellow-wash)}
+.btn:focus-visible,.tbtn:focus-visible,.item:focus-visible{outline:3px solid var(--ink);outline-offset:2px}
 
-/* ---------- parts column ---------- */
-.parts{min-width:0;padding-block:clamp(20px,3vw,36px) 48px;padding-left:max(clamp(16px,3vw,36px),env(safe-area-inset-left,0px));padding-right:max(clamp(16px,3vw,36px),env(safe-area-inset-right,0px))}
-.head{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
-.head img{height:clamp(40px,6vw,60px);width:auto;max-width:100%;background:var(--ink);padding:6px 12px;border-radius:8px}
-h1{margin:0;font:400 clamp(34px,6vw,56px)/.95 var(--hand);letter-spacing:.01em}
-.lede{margin:.6em 0 0;max-width:46ch;color:var(--ink-soft)}
-.glance{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:0;margin:22px 0 6px;border:2px solid var(--rule)}
-.glance div{padding:10px 12px;border-right:2px solid var(--rule);border-bottom:2px solid var(--rule);margin:-1px -1px 0 0}
-.glance dt{font:600 11px/1.2 var(--sans);letter-spacing:.08em;text-transform:uppercase;color:var(--ink-soft)}
-.glance dd{margin:4px 0 0;font:700 17px/1.2 var(--sans);font-variant-numeric:tabular-nums}
-
-h2{margin:30px 0 0;padding-bottom:8px;border-bottom:2px solid var(--rule);font:700 12px/1 var(--sans);letter-spacing:.14em;text-transform:uppercase;display:flex;justify-content:space-between;gap:12px}
-h2 span{color:var(--ink-soft);font-weight:600;letter-spacing:.06em}
-ol{list-style:none;margin:0;padding:0}
-.part{display:grid;grid-template-columns:42px minmax(0,1fr);gap:14px;width:100%;text-align:left;padding:14px 10px 14px 6px;background:none;border:0;border-bottom:1px solid #c9c9c3;cursor:pointer;scroll-margin-top:calc(var(--sticky,0px) + 12px)}
-.part:hover{background:#faf8ee}
-.num{width:36px;height:36px;border-radius:50%;background:var(--yellow);border:2px solid var(--ink);display:grid;place-items:center;font:700 15px/1 var(--sans);font-variant-numeric:tabular-nums}
-.name{margin:0;font:400 clamp(24px,3.2vw,30px)/1.05 var(--hand)}
-.part p{margin:4px 0 0;color:var(--ink-soft);font-size:15px;max-width:52ch}
-.part[aria-current="true"]{background:var(--yellow-wash);box-shadow:inset 0 0 0 2px var(--ink)}
-.part[aria-current="true"] .num{background:var(--ink);color:var(--yellow);border-color:var(--ink)}
-.foot{margin-top:28px;color:var(--ink-soft);font-size:13px;max-width:56ch}
-
-/* ---------- phone and narrow tablet: stage sticks to the top ---------- */
-@media (max-width:900px){
-  .wrap{display:block}
-  .stage{height:var(--stage-h);border-right:0;border-bottom:2px solid var(--rule);z-index:5}
-  .ctl{padding-top:6px;gap:6px}
-  .btn{min-height:40px;min-width:44px;padding:0 10px;font-size:11px;letter-spacing:.04em}
-  .step .btn{min-width:40px;font-size:17px}
-  .step output{min-width:50px;font-size:13px}
-  .parts{--sticky:var(--stage-h);padding-top:18px}
-  .pin b{width:24px;height:24px;left:-12px;top:-12px}
-}
-@media (prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}
-/* mobile first: one phone-width column on every screen. The cart sticks to the top, the parts list scrolls under it. */
-:root{--stage-h:min(56dvh,560px)}
-body{background:#d9d9d4}
-.wrap{display:block;max-width:560px;margin:0 auto;min-height:100dvh;background:var(--paper);box-shadow:0 0 0 2px var(--rule)}
-.stage{height:var(--stage-h);border-right:0;border-bottom:2px solid var(--rule);z-index:5}
-.parts{--sticky:var(--stage-h)}
+/* ---------- all parts (opens over everything) ---------- */
+.all{position:absolute;inset:0;z-index:20;background:var(--paper);display:flex;flex-direction:column;transform:translateY(102%);transition:transform .28s ease;visibility:hidden}
+.all.open{transform:none;visibility:visible}
+.all-head{flex:0 0 auto;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:calc(12px + env(safe-area-inset-top,0px)) max(14px,env(safe-area-inset-right,0px)) 12px max(14px,env(safe-area-inset-left,0px));border-bottom:2px solid var(--rule)}
+.all-head h2{margin:0;font:400 34px/1 var(--hand)}
+.all-body{flex:1 1 auto;overflow:auto;padding:0 max(14px,env(safe-area-inset-right,0px)) calc(24px + env(safe-area-inset-bottom,0px)) max(14px,env(safe-area-inset-left,0px));-webkit-overflow-scrolling:touch}
+.glance{display:grid;grid-template-columns:1fr 1fr;border:2px solid var(--rule);margin:16px 0 4px}
+.glance div{padding:9px 11px;border-right:2px solid var(--rule);border-bottom:2px solid var(--rule);margin:-1px -1px 0 0}
+.glance dt{font:600 10px/1.2 var(--sans);letter-spacing:.08em;text-transform:uppercase;color:var(--ink-soft)}
+.glance dd{margin:3px 0 0;font:700 15px/1.2 var(--sans)}
+.grp{margin:24px 0 0;padding-bottom:8px;border-bottom:2px solid var(--rule);font:700 12px/1 var(--sans);letter-spacing:.14em;text-transform:uppercase;display:flex;justify-content:space-between}
+.grp span{color:var(--ink-soft);font-weight:600}
+.item{display:grid;grid-template-columns:40px minmax(0,1fr);gap:12px;width:100%;text-align:left;padding:12px 4px;background:none;border:0;border-bottom:1px solid #c9c9c3;cursor:pointer}
+.item .num{width:34px;height:34px;font-size:14px}
+.item h3{margin:0;font:400 26px/1.05 var(--hand)}
+.item p{margin:3px 0 0;color:var(--ink-soft);font-size:14px}
+.item[aria-current="true"]{background:var(--yellow-wash)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 
-<div class="wrap">
+<div class="app" id="app">
   <section class="stage" id="stage" aria-label="3D model of the cart">
     <model-viewer id="v" src="cart.glb" poster="poster.jpg" reveal="auto" loading="eager" alt="PJ's cart. Drag to turn it, pinch to zoom."
       camera-controls touch-action="none" interaction-prompt="none"
       auto-rotate auto-rotate-delay="3500" rotation-per-second="12deg"
-      camera-orbit="38deg 76deg auto" min-camera-orbit="auto 4deg 0.6m" max-camera-orbit="auto 106deg 7m"
+      camera-orbit="38deg 78deg auto" min-camera-orbit="auto 4deg 0.6m" max-camera-orbit="auto 106deg 7m"
       field-of-view="30deg" interpolation-decay="70" exposure="1.0" shadow-intensity="1.1" shadow-softness="0.9"
-      environment-image="neutral" ar ar-modes="webxr scene-viewer quick-look" ar-placement="floor">
-    </model-viewer>
+      environment-image="neutral" ar ar-modes="webxr scene-viewer quick-look" ar-placement="floor"></model-viewer>
+    <div class="brand"><img src="signature.png" alt="PJ O'Rourke"><span>The Cart</span></div>
+    <div class="tools">
+      <button class="tbtn" id="bPins" aria-pressed="true">Nums</button>
+      <button class="tbtn" id="bSpin" aria-pressed="true">Spin</button>
+      <button class="tbtn" id="bReset">Reset</button>
+      <button class="tbtn" id="bAR" hidden>AR</button>
+    </div>
     <div class="loading" id="loading" role="status" aria-live="polite">
       <div class="ld-title" id="ldTitle">Loading the cart…</div>
       <div class="ld-bar" aria-hidden="true"><i id="ldFill"></i></div>
       <div class="ld-pct" id="ldPct">0%</div>
     </div>
-    <div class="ctl">
-      <div class="step" role="group" aria-label="Step through the parts">
-        <button class="btn" id="prev" aria-label="Previous part">‹</button>
-        <output id="stepOut">1 / 20</output>
-        <button class="btn" id="next" aria-label="Next part">›</button>
-      </div>
-      <button class="btn" id="bPins" aria-pressed="true">Numbers</button>
-      <button class="btn" id="bSpin" aria-pressed="true">Spin</button>
-      <button class="btn" id="bReset">Reset</button>
-      <button class="btn" id="bAR" hidden>In your room</button>
+  </section>
+
+  <section class="sheet" aria-label="Part description">
+    <div class="card" aria-live="polite">
+      <span class="num" id="cNum">★</span>
+      <div><h2 id="cName">The Cart</h2><p id="cText">Drag to spin it. Tap a yellow number, or use the arrows, to see each part.</p></div>
+    </div>
+    <div class="nav">
+      <button class="btn arrow" id="prev" aria-label="Previous part">‹</button>
+      <button class="btn main" id="bAll">All parts · <span id="cCount">20</span></button>
+      <button class="btn arrow" id="next" aria-label="Next part">›</button>
     </div>
   </section>
 
-  <main class="parts">
-    <div class="head">
-      <img src="signature.png" alt="PJ O'Rourke">
-      <h1>The Cart</h1>
+  <section class="all" id="all" aria-label="All parts">
+    <div class="all-head"><h2>All parts</h2><button class="btn" id="closeAll" style="min-width:84px">Close</button></div>
+    <div class="all-body">
+      <dl class="glance">
+        <div><dt>Height with lamp</dt><dd>6 ft 5 in</dd></div>
+        <div><dt>Cabinet</dt><dd>17 × 14 × 63 in</dd></div>
+        <div><dt>Basket inside</dt><dd>18 × 15 × 16 in</dd></div>
+        <div><dt>You push from</dt><dd>the back</dd></div>
+      </dl>
+      <div id="list"></div>
     </div>
-    <p class="lede">Everything on it, numbered. Spin the cart with your finger, then tap a number or a part below to fly in on it.</p>
-    <dl class="glance">
-      <div><dt>Height with lamp</dt><dd>6 ft 5 in</dd></div>
-      <div><dt>Cabinet</dt><dd>17 × 14 × 63 in</dd></div>
-      <div><dt>Basket inside</dt><dd>18 × 15 × 16 in</dd></div>
-      <div><dt>You push from</dt><dd>the back</dd></div>
-    </dl>
-    <div id="list"></div>
-    <p class="foot">Sizes are the ones used to build the model. Prices on the tags are the shop's. The iPad plays the New York Fuckery loop.</p>
-  </main>
+  </section>
 </div>
 
 <script>
-const V=document.getElementById('v'), stage=document.getElementById('stage');
-const IN=0.0254;
+const V=document.getElementById('v'), stage=document.getElementById('stage'), IN=0.0254;
 /* id, group, name, explanation, position in inches (cart coordinates: +X front, -X handle end, +Y long side, -Y iPad side, Z up), outward normal, how close to fly (m) */
 const GROUPS=['On top','Outside','The frame','Inside'];
 const ITEMS=[
@@ -176,42 +155,39 @@ const ITEMS=[
  ['pit','Inside','Open storage pit','An open pit at the bottom for anything bulky. Its back wall is level with the top of the basket.',[-4.0,0,18.0],[-1,0,0],0.95]
 ];
 const glt=(p)=>[p[0]*IN,p[2]*IN,-p[1]*IN];            // cart inches (x,y,z up) -> glTF metres (x, y up, -z)
-const listEl=document.getElementById('list'), pins={}, rows={};
+const pins={}, rows={};
+document.getElementById('cCount').textContent=ITEMS.length;
 
-/* parts list */
+/* the full list */
+const listEl=document.getElementById('list');
 GROUPS.forEach(g=>{
   const items=ITEMS.filter(i=>i[1]===g);
-  const h=document.createElement('h2'); h.innerHTML=g+'<span>'+items.length+' parts</span>'; listEl.appendChild(h);
-  const ol=document.createElement('ol'); listEl.appendChild(ol);
+  const h=document.createElement('div'); h.className='grp'; h.innerHTML=g+'<span>'+items.length+' parts</span>'; listEl.appendChild(h);
   items.forEach(it=>{
-    const n=ITEMS.indexOf(it)+1, li=document.createElement('li'), b=document.createElement('button');
-    b.className='part'; b.type='button'; b.id='part-'+it[0];
-    b.innerHTML='<span class="num">'+n+'</span><span><h3 class="name">'+it[2]+'</h3><p>'+it[3]+'</p></span>';
-    b.addEventListener('click',()=>select(it[0],true)); li.appendChild(b); ol.appendChild(li); rows[it[0]]=b;
+    const n=ITEMS.indexOf(it)+1, b=document.createElement('button'); b.className='item'; b.type='button';
+    b.innerHTML='<span class="num">'+n+'</span><span><h3>'+it[2]+'</h3><p>'+it[3]+'</p></span>';
+    b.addEventListener('click',()=>{closeAll();select(it[0],true)}); listEl.appendChild(b); rows[it[0]]=b;
   });
 });
 
-/* numbered pins on the model */
+/* numbered pins on the cart */
 ITEMS.forEach((it,i)=>{
   const b=document.createElement('button'); b.className='pin'; b.slot='hotspot-'+it[0]; b.type='button';
   b.dataset.visibilityAttribute='visible'; b.setAttribute('aria-label','Part '+(i+1)+': '+it[2]);
   b.dataset.position=glt(it[4]).map(v=>v.toFixed(4)+'m').join(' ');
   const nm=it[5]; b.dataset.normal=nm[0]+' '+nm[2]+' '+(-nm[1]);
-  b.innerHTML='<b>'+(i+1)+'</b>'; b.addEventListener('click',()=>select(it[0],true,true));
+  b.innerHTML='<b>'+(i+1)+'</b>'; b.addEventListener('click',()=>select(it[0],true));
   V.appendChild(b); pins[it[0]]=b;
 });
 
-/* selecting: highlight the row and pin, fly the camera in head-on */
+/* one part at a time: update the card, light the pin, fly the camera in head-on */
 let cur=-1;
-const HOME={orbit:'38deg 76deg auto',target:'auto auto auto',fov:'30deg'};
-const out=document.getElementById('stepOut');
-function stickyH(){return stage.offsetHeight}
-function select(id,fly,scroll){
+const HOME={orbit:'38deg 78deg auto',target:'auto auto auto',fov:'30deg'};
+function select(id,fly){
   const idx=ITEMS.findIndex(i=>i[0]===id); if(idx<0) return; cur=idx; const it=ITEMS[idx];
-  Object.values(rows).forEach(r=>r.removeAttribute('aria-current')); rows[id].setAttribute('aria-current','true');
+  document.getElementById('cNum').textContent=idx+1; document.getElementById('cName').textContent=it[2]; document.getElementById('cText').textContent=it[3];
   Object.values(pins).forEach(p=>p.classList.remove('on')); pins[id].classList.add('on');
-  out.textContent=(idx+1)+' / '+ITEMS.length;
-  document.documentElement.style.setProperty('--sticky',stickyH()+'px');
+  Object.values(rows).forEach(r=>r.removeAttribute('aria-current')); rows[id].setAttribute('aria-current','true');
   if(fly){
     const n=it[5], theta=Math.atan2(n[0],-n[1])*180/Math.PI;
     const phi=Math.max(58,Math.min(98,90-Math.atan2(n[2],Math.hypot(n[0],n[1]))*180/Math.PI*0.6));
@@ -220,47 +196,45 @@ function select(id,fly,scroll){
     const k=stage.clientWidth<stage.clientHeight*0.9?1.9:1;          // tall, narrow stage (phone): stand further back
     V.cameraOrbit=theta.toFixed(1)+'deg '+phi.toFixed(1)+'deg '+(it[6]*k).toFixed(2)+'m';
   }
-  if(scroll||fly) rows[id].scrollIntoView({block:'nearest',behavior:'smooth'});
 }
 function reset(){
-  cur=-1; out.textContent='– / '+ITEMS.length;
-  Object.values(rows).forEach(r=>r.removeAttribute('aria-current')); Object.values(pins).forEach(p=>p.classList.remove('on'));
+  cur=-1; document.getElementById('cNum').textContent='★'; document.getElementById('cName').textContent='The Cart';
+  document.getElementById('cText').textContent='Drag to spin it. Tap a yellow number, or use the arrows, to see each part.';
+  Object.values(pins).forEach(p=>p.classList.remove('on')); Object.values(rows).forEach(r=>r.removeAttribute('aria-current'));
   V.cameraTarget=HOME.target; V.cameraOrbit=HOME.orbit; V.fieldOfView=HOME.fov;
 }
-out.textContent='– / '+ITEMS.length;
 
-/* controls */
+/* buttons */
 function setPressed(id,on){document.getElementById(id).setAttribute('aria-pressed',on)}
-document.getElementById('prev').onclick=()=>select(ITEMS[(cur<=0?ITEMS.length:cur)-1][0],true,true);
-document.getElementById('next').onclick=()=>select(ITEMS[(cur+1)%ITEMS.length][0],true,true);
+document.getElementById('prev').onclick=()=>select(ITEMS[(cur<=0?ITEMS.length:cur)-1][0],true);
+document.getElementById('next').onclick=()=>select(ITEMS[(cur+1)%ITEMS.length][0],true);
 document.getElementById('bPins').onclick=e=>{const on=e.currentTarget.getAttribute('aria-pressed')!=='true';setPressed('bPins',on);stage.classList.toggle('no-pins',!on)};
 document.getElementById('bSpin').onclick=e=>{const on=e.currentTarget.getAttribute('aria-pressed')!=='true';setPressed('bSpin',on);V.autoRotate=on;if(on&&cur>=0)reset()};
 document.getElementById('bReset').onclick=()=>{reset();V.autoRotate=true;setPressed('bSpin',true)};
+document.getElementById('bAR').onclick=()=>V.activateAR();
+const all=document.getElementById('all');
+function openAll(){all.classList.add('open')} function closeAll(){all.classList.remove('open')}
+document.getElementById('bAll').onclick=openAll; document.getElementById('closeAll').onclick=closeAll;
 V.addEventListener('camera-change',e=>{if(e.detail&&e.detail.source==='user-interaction'){setPressed('bSpin',false)}});
-window.addEventListener('resize',()=>document.documentElement.style.setProperty('--sticky',stickyH()+'px'));
 
-/* real loading progress: download percent, then a "setting up" state while the phone prepares the model */
+/* loading progress, and an on-screen message if the model can't start */
+function loadProblem(msg){
+  document.getElementById('ldTitle').textContent='The 3D model did not start';
+  const p=document.getElementById('ldPct'); p.textContent=msg; p.style.whiteSpace='normal'; p.style.textAlign='center'; p.style.maxWidth='88%';
+  document.getElementById('loading').classList.remove('done');
+}
 V.addEventListener('progress',e=>{
   const p=Math.max(0,Math.min(1,e.detail.totalProgress||0)), pct=Math.round(p*100);
   document.getElementById('ldFill').style.width=pct+'%';
   document.getElementById('ldPct').textContent=pct<100?pct+'%':'Setting it up…';
   if(pct>=100) document.getElementById('ldTitle').textContent='Almost there…';
 });
-/* if the model can't start on this device, say so on screen instead of waiting forever */
-function loadProblem(msg){
-  const t=document.getElementById('ldTitle'); t.textContent='The 3D model did not start';
-  document.getElementById('ldPct').textContent=msg; document.getElementById('ldPct').style.whiteSpace='normal';
-  document.getElementById('ldPct').style.textAlign='center'; document.getElementById('ldPct').style.maxWidth='88%';
-  const ld=document.getElementById('loading'); ld.classList.remove('done'); ld.style.pointerEvents='none';
-}
-V.addEventListener('error',e=>{const d=e.detail||{}; loadProblem('Error: '+(d.sourceError&&d.sourceError.message||d.message||d.type||'unknown')+'. The parts list below still works.')});
-setTimeout(()=>{if(!V.loaded) loadProblem('Still loading after 45 seconds. Check your connection, then reload. The parts list below still works.')},45000);
-/* the "in your room" button only shows where AR works */
-document.getElementById('bAR').onclick=()=>V.activateAR();
+V.addEventListener('error',e=>{const d=e.detail||{}; loadProblem('Error: '+(d.sourceError&&d.sourceError.message||d.message||d.type||'unknown'))});
+setTimeout(()=>{if(!V.loaded) loadProblem('Still loading after 45 seconds. Check your connection, then reload.')},45000);
+
 V.addEventListener('load',()=>{
   document.getElementById('loading').classList.add('done');
   document.getElementById('bAR').hidden=!V.canActivateAR;
-  document.documentElement.style.setProperty('--sticky',stickyH()+'px');
   /* iPad plays the New York Fuckery loop; the lamp flashes like a real barricade light */
   const mats=V.model.materials, byName=n=>mats.find(x=>x.name===n);
   const screen=byName('iPadScreen');
